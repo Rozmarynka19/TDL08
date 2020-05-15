@@ -6,7 +6,7 @@ vector<vector<bool>> matrixMultiplicationWithModulo(vector<vector<bool>> A, vect
 {
 	if (A[0].size() != B.size())
 	{
-		cout << "Number of A's columns are not equal number of B's rows" << endl;
+		cout << "[matrixMultiplicationWithModulo]\tNumber of A's columns are not equal number of B's rows" << endl;
 		return vector<vector<bool>>(1, vector<bool>(0, 0));
 	}
 
@@ -37,6 +37,20 @@ vector<vector<bool>> Hamming74Coder(vector<vector<bool>> data)
 							{0,0,1,0},
 							{0,0,0,1} };
 	return matrixMultiplicationWithModulo(G, data);
+}
+
+//position numbered from 0
+//allowed value of position = <0,6>
+vector<vector<bool>> bitNegator(vector<vector<bool>> data, unsigned int position)
+{
+	if (position > 6)
+	{
+		cout << "[bitNegator]\tPosition number out of range! Function will return unchanged vector.\n";
+		return data;
+	}
+
+	data[position][0] = !(data[position][0]);
+	return data;
 }
 
 int main()
@@ -79,20 +93,27 @@ int main()
 	/*vector<vector<bool>> A{ {1,1,1,1},{1,0,1,1},{0,1,1,0} }, B{ {1},{0},{1},{1} };
 	vector<vector<bool>> result = matrixMultiplicationWithModulo(A, B);*/
 
-	vector<vector<bool>> result = Hamming74Coder(bitsetArrayRewrite);
-	for (size_t r = 0; r < result.size(); r++)
+	vector<vector<bool>> HammingCode = Hamming74Coder(bitsetArrayRewrite);
+	for (size_t r = 0; r < HammingCode.size(); r++)
 	{
-		for (size_t c = 0; c < result[r].size(); c++)
-			cout << result[r][c] << " ";
+		for (size_t c = 0; c < HammingCode[r].size(); c++)
+			cout << HammingCode[r][c] << " ";
 		cout << endl;
 	}
-
+	cout << endl;
+	vector<vector<bool>> tmp = bitNegator(HammingCode, 4);
+	for (size_t r = 0; r < tmp.size(); r++)
+	{
+		for (size_t c = 0; c < tmp[r].size(); c++)
+			cout << tmp[r][c] << " ";
+		cout << endl;
+	}
 }
 
 //Plan dzialania:
 //x1. Napisac funkcje do wykonywania mnozenia macierzowego
 //X2. Wydzielic S2BS i dostoswac do projektu
-//3. Zaimplementowac funkcje kodujaca kodem Hamming(7,4)
+//x3. Zaimplementowac funkcje kodujaca kodem Hamming(7,4)
 //4. Napisac funkcje wprowadzajaca bit bledu (negujaca wskazany nr bitu)
 //5. Napisac dekoder kodu Hamminga(7,4)
 //6. Zmodyfikowac powyzej napisany koder i dekoder, by obslugiwal kod SECDED (z dodatkowym bitem parzystosci)
