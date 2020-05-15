@@ -82,71 +82,34 @@ vector<vector<bool>> bitNegator(vector<vector<bool>> codedData, unsigned int pos
 
 vector<vector<bool>> Hamming74Decoder(vector<vector<bool>> codedData, bool isSECDED)
 {
-	if (isSECDED == false)
+	//parity check
+	vector<vector<bool>> H{ {1,0,1,0,1,0,1},
+							{0,1,1,0,0,1,1},
+							{0,0,0,1,1,1,1} };
+
+
+	//necessary only if isSECDED mode is on
+	vector<bool> tmp = codedData.back();
+	bool parityBit = tmp.back();
+	if (isSECDED) codedData.pop_back();
+	//
+
+	vector<vector<bool>> decodedParity = matrixMultiplicationWithModulo(H, codedData);
+	unsigned int position = 0;
+
+	for (size_t r = 0; r < decodedParity.size(); r++)
 	{
-		//parity check
-		vector<vector<bool>> H{ {1,0,1,0,1,0,1},
-								{0,1,1,0,0,1,1},
-								{0,0,0,1,1,1,1} };
-
-
-
-		vector<vector<bool>> decodedParity = matrixMultiplicationWithModulo(H, codedData);
-		unsigned int position = 0;
-
-		for (size_t r = 0; r < decodedParity.size(); r++)
-		{
-			position = position + (unsigned int)(pow(2, r) * (unsigned int)(decodedParity[r][0]));
-		}
-		//cout << position << endl;
-		//error correction
-		if (position != 0)
-		{
-			cout << "[Hamming74Decoder]\tBit corruption detected at position = " << position << endl;
-			codedData[position - 1][0] = !(codedData[position - 1][0]);
-		}
-
-		//data bits extraction
-		vector<vector<bool>> decodedData(bits, vector<bool>(1));
-		vector<unsigned int> dataBitsPosition{ 2,4,5,6 };
-
-		for (size_t i = 0; i < bits; i++)
-			decodedData[i][0] = codedData[dataBitsPosition[i]][0];
-
-		return decodedData;
+		position = position + (unsigned int)(pow(2, r) * (unsigned int)(decodedParity[r][0]));
 	}
-	else
+	//cout << position << endl;
+	//error correction
+	if (position != 0)
 	{
-		//parity check
-		vector<vector<bool>> H{ {1,0,1,0,1,0,1},
-								{0,1,1,0,0,1,1},
-								{0,0,0,1,1,1,1} };
+		cout << "[Hamming74Decoder]\tBit corruption detected at position = " << position << endl;
+		codedData[position - 1][0] = !(codedData[position - 1][0]);
 
-
-		vector<bool> tmp = codedData.back();
-		bool parityBit = tmp.back();
-		codedData.pop_back();
-
-		/*bool currentParityBit = 0;
-
-		for (size_t r = 0; r < codedData.size(); r++)
-			currentParityBit = currentParityBit ^ codedData[r][0];*/
-
-
-		vector<vector<bool>> decodedParity = matrixMultiplicationWithModulo(H, codedData);
-		unsigned int position = 0;
-
-		for (size_t r = 0; r < decodedParity.size(); r++)
+		if (isSECDED)
 		{
-			position = position + (unsigned int)(pow(2, r) * (unsigned int)(decodedParity[r][0]));
-		}
-		//cout << position << endl;
-		//error correction
-		if (position != 0)
-		{
-			cout << "[Hamming74Decoder]\tBit corruption detected at position = " << position << endl;
-			codedData[position - 1][0] = !(codedData[position - 1][0]);
-
 			bool currentParityBit = 0;
 
 			for (size_t r = 0; r < codedData.size(); r++)
@@ -160,20 +123,18 @@ vector<vector<bool>> Hamming74Decoder(vector<vector<bool>> codedData, bool isSEC
 				return codedData;
 			}
 		}
-		//else if(position==0 && currentParityBit == parityBit
-
-		//data bits extraction
-		vector<vector<bool>> decodedData(bits, vector<bool>(1));
-		vector<unsigned int> dataBitsPosition{ 2,4,5,6 };
-
-		for (size_t i = 0; i < bits; i++)
-			decodedData[i][0] = codedData[dataBitsPosition[i]][0];
-
-		return decodedData;
-
-
 
 	}
+	//else if(position==0 && currentParityBit == parityBit
+
+	//data bits extraction
+	vector<vector<bool>> decodedData(bits, vector<bool>(1));
+	vector<unsigned int> dataBitsPosition{ 2,4,5,6 };
+
+	for (size_t i = 0; i < bits; i++)
+		decodedData[i][0] = codedData[dataBitsPosition[i]][0];
+
+	return decodedData;
 
 }
 
@@ -225,7 +186,7 @@ int main()
 		cout << endl;
 	}
 	cout << endl;
-	vector<vector<bool>> corruptedHammingCode = bitNegator(HammingCode, 1);
+	vector<vector<bool>> corruptedHammingCode = bitNegator(HammingCode, 4);
 	for (size_t r = 0; r < corruptedHammingCode.size(); r++)
 	{
 		for (size_t c = 0; c < corruptedHammingCode[r].size(); c++)
@@ -233,7 +194,7 @@ int main()
 		cout << endl;
 	}
 	cout << endl;
-	vector<vector<bool>> decodedData = Hamming74Decoder(corruptedHammingCode,true);
+	vector<vector<bool>> decodedData = Hamming74Decoder(corruptedHammingCode, true);
 	for (size_t r = 0; r < decodedData.size(); r++)
 	{
 		for (size_t c = 0; c < decodedData[r].size(); c++)
