@@ -1,5 +1,5 @@
 #include "S2BS.h"
-
+#define verboseMode
 using namespace std;
 
 vector<vector<bool>> matrixMultiplicationWithModulo(vector<vector<bool>> A, vector<vector<bool>> B)
@@ -82,7 +82,7 @@ vector<vector<bool>> bitNegator(vector<vector<bool>> codedData, unsigned int pos
 
 vector<vector<bool>> Hamming74Decoder(vector<vector<bool>> codedData, bool isSECDED)
 {
-	//parity check
+	//=========== parity check ==============
 	vector<vector<bool>> H{ {1,0,1,0,1,0,1},
 							{0,1,1,0,0,1,1},
 							{0,0,0,1,1,1,1} };
@@ -101,8 +101,8 @@ vector<vector<bool>> Hamming74Decoder(vector<vector<bool>> codedData, bool isSEC
 	{
 		position = position + (unsigned int)(pow(2, r) * (unsigned int)(decodedParity[r][0]));
 	}
-	//cout << position << endl;
-	//error correction
+	
+	//=========== error correction =============
 	if (position != 0)
 	{
 		cout << "[Hamming74Decoder]\tBit corruption detected at position = " << position << endl;
@@ -125,9 +125,8 @@ vector<vector<bool>> Hamming74Decoder(vector<vector<bool>> codedData, bool isSEC
 		}
 
 	}
-	//else if(position==0 && currentParityBit == parityBit
 
-	//data bits extraction
+	//============= data bits extraction =================
 	vector<vector<bool>> decodedData(bits, vector<bool>(1));
 	vector<unsigned int> dataBitsPosition{ 2,4,5,6 };
 
@@ -135,79 +134,49 @@ vector<vector<bool>> Hamming74Decoder(vector<vector<bool>> codedData, bool isSEC
 		decodedData[i][0] = codedData[dataBitsPosition[i]][0];
 
 	return decodedData;
-
 }
 
 int main()
 {
-	/*bool a = 1;
-	bool b = 1;
-	cout << (bool)(a^b) << endl;*/
 	vector<char> charTab{ 'z' };
 	vector<bitset<bits>> bitsetArray = S2BS(charTab, false);
 	vector<vector<bool>> bitsetArrayRewrite(bits, vector<bool>(1));
 
-	//Rewriting 2d bitsetArray to 1d bitsetArrayRewrite
+	//Rewriting 2d bitsetArray to 1d bitsetArrayRewrite - already transposed -> vertical vector
 	for (size_t j = 0; j < bits; j++)
 	{
 		for (size_t i = 0; i < bitsetArray.size(); i++)
-			//bitsetArrayRewrite.push_back(bitsetArray[i][j]);
 			bitsetArrayRewrite[j][i] = bitsetArray[i][j];
 	}
 
-	/*for (size_t r = 0; r < bitsetArrayRewrite.size(); r++)
-	{
-		for (size_t c = 0; c < bitsetArrayRewrite[r].size(); c++)
-			cout << bitsetArrayRewrite[r][c] << " ";
-		cout << endl;
-	}*/
-
-	//{{20,15},{14,10}} w/o modulo
-	/*vector<vector<unsigned int>> A{ {2,3,4},{1,2,3} }, B{ {1,2},{2,1},{3,2} };
-	vector<vector<unsigned int>> result = matrixMultiplication(A, B);*/
-
-	//{{1,2},{1,0}} w/o modulo
-	/*vector<vector<bool>> A{ {1,0,1},{0,1,0} }, B{ {0,1},{1,0},{1,1} };
-	vector<vector<bool>> result = matrixMultiplicationWithModulo(A, B);*/
-
-	//{{2,2},{1,2}} w/o modulo
-	/*vector<vector<bool>> A{ {1,1,1},{1,0,1} }, B{ {1,1},{1,0},{0,1} };
-	vector<vector<bool>> result = matrixMultiplicationWithModulo(A, B);*/
-
-	//{{3},{3},{1}} w/o modulo
-	/*vector<vector<bool>> A{ {1,1,1,1},{1,0,1,1},{0,1,1,0} }, B{ {1},{0},{1},{1} };
-	vector<vector<bool>> result = matrixMultiplicationWithModulo(A, B);*/
-
 	vector<vector<bool>> HammingCode = Hamming74Coder(bitsetArrayRewrite, true);
+#ifdef verboseMode
+	cout << "After coding:\n";
 	for (size_t r = 0; r < HammingCode.size(); r++)
 	{
 		for (size_t c = 0; c < HammingCode[r].size(); c++)
 			cout << HammingCode[r][c] << " ";
 		cout << endl;
 	}
-	cout << endl;
+#endif // verboseMode
 	vector<vector<bool>> corruptedHammingCode = bitNegator(HammingCode, 4);
+#ifdef verboseMode
+	cout << "After negation:\n";
 	for (size_t r = 0; r < corruptedHammingCode.size(); r++)
 	{
 		for (size_t c = 0; c < corruptedHammingCode[r].size(); c++)
 			cout << corruptedHammingCode[r][c] << " ";
 		cout << endl;
 	}
-	cout << endl;
+#endif // verboseMode	
 	vector<vector<bool>> decodedData = Hamming74Decoder(corruptedHammingCode, true);
+#ifdef verboseMode
+	cout << "After decoding:\n";
 	for (size_t r = 0; r < decodedData.size(); r++)
 	{
 		for (size_t c = 0; c < decodedData[r].size(); c++)
 			cout << decodedData[r][c] << " ";
 		cout << endl;
 	}
+#endif // verboseMode
 }
-
-//Plan dzialania:
-//x1. Napisac funkcje do wykonywania mnozenia macierzowego
-//X2. Wydzielic S2BS i dostoswac do projektu
-//x3. Zaimplementowac funkcje kodujaca kodem Hamming(7,4)
-//x4. Napisac funkcje wprowadzajaca bit bledu (negujaca wskazany nr bitu)
-//x5. Napisac dekoder kodu Hamminga(7,4)
-//6. Zmodyfikowac powyzej napisany koder i dekoder, by obslugiwal kod SECDED (z dodatkowym bitem parzystosci)
-//    - ten punkt realizowac rownolegle z powyzszymi - dodac przelaczniki
