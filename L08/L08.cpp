@@ -18,7 +18,7 @@ vector<vector<bool>> matrixMultiplicationWithModulo(vector<vector<bool>> A, vect
 		for (size_t c = 0; c < B[0].size(); c++)
 		{
 			temp = 0;
-			for (size_t i = 0; i < A[0].size(); i++)				
+			for (size_t i = 0; i < A[0].size(); i++)
 				temp = temp ^ A[r][i] & B[i][c]; //temp = temp + A[r][i] * B[i][c];		
 			result[r][c] = temp;// % 2;
 		}
@@ -27,7 +27,7 @@ vector<vector<bool>> matrixMultiplicationWithModulo(vector<vector<bool>> A, vect
 	return result;
 }
 
-vector<vector<bool>> Hamming74Coder(vector<vector<bool>> data)
+vector<vector<bool>> Hamming74Coder(vector<vector<bool>> data, bool isSECDED)
 {
 	vector<vector<bool>> G{ {1,1,0,1},
 							{1,0,1,1},
@@ -36,7 +36,18 @@ vector<vector<bool>> Hamming74Coder(vector<vector<bool>> data)
 							{0,1,0,0},
 							{0,0,1,0},
 							{0,0,0,1} };
-	return matrixMultiplicationWithModulo(G, data);
+	if (isSECDED == false) return matrixMultiplicationWithModulo(G, data);
+	else
+	{
+		vector<vector<bool>> codedData = matrixMultiplicationWithModulo(G, data);
+		bool parityBit = 0;
+
+		for (size_t r = 0; r < codedData.size(); r++)
+			parityBit = parityBit ^ codedData[r][0];
+		codedData.push_back(vector<bool>{parityBit});
+
+		return codedData;
+	}
 }
 
 //position numbered from 1
@@ -49,40 +60,121 @@ vector<vector<bool>> bitNegator(vector<vector<bool>> codedData, unsigned int pos
 		return codedData;
 	}
 
-	codedData[position-1][0] = !(codedData[position-1][0]);
+	codedData[position - 1][0] = !(codedData[position - 1][0]);
 	return codedData;
 }
 
-vector<vector<bool>> Hamming74Decoder(vector<vector<bool>> codedData)
+//double bit negation
+//position1 & position2 numbered from 1
+//allowed value of positions = <1,7>
+vector<vector<bool>> bitNegator(vector<vector<bool>> codedData, unsigned int position1, unsigned int position2)
 {
-	//parity check
-	vector<vector<bool>> H{ {1,0,1,0,1,0,1},
-							{0,1,1,0,0,1,1},
-							{0,0,0,1,1,1,1} };
-
-	vector<vector<bool>> decodedParity = matrixMultiplicationWithModulo(H, codedData);
-	unsigned int position = 0;
-
-	for (size_t r = 0; r < decodedParity.size(); r++)
+	if (position1 > 7 || position2 > 7)
 	{
-		position = position + (unsigned int)(pow(2, r) * (unsigned int)(decodedParity[r][0]));
-	}
-	cout << position << endl;
-	//error correction
-	if (position != 0)
-	{
-		cout << "[Hamming74Decoder]\tBit corruption detected at position = " << position << endl;
-		codedData[position-1][0] = !(codedData[position-1][0]);
+		cout << "[bitNegator]\tPosition number out of range! Function will return unchanged vector.\n";
+		return codedData;
 	}
 
-	//data bits extraction
-	vector<vector<bool>> decodedData(bits, vector<bool>(1));
-	vector<unsigned int> dataBitsPosition{ 2,4,5,6 };
+	codedData[position1 - 1][0] = !(codedData[position1 - 1][0]);
+	codedData[position2 - 1][0] = !(codedData[position2 - 1][0]);
+	return codedData;
+}
 
-	for (size_t i = 0; i < bits; i++)
-		decodedData[i][0]=codedData[dataBitsPosition[i]][0];
+vector<vector<bool>> Hamming74Decoder(vector<vector<bool>> codedData, bool isSECDED)
+{
+	if (isSECDED == false)
+	{
+		//parity check
+		vector<vector<bool>> H{ {1,0,1,0,1,0,1},
+								{0,1,1,0,0,1,1},
+								{0,0,0,1,1,1,1} };
 
-	return decodedData;
+
+
+		vector<vector<bool>> decodedParity = matrixMultiplicationWithModulo(H, codedData);
+		unsigned int position = 0;
+
+		for (size_t r = 0; r < decodedParity.size(); r++)
+		{
+			position = position + (unsigned int)(pow(2, r) * (unsigned int)(decodedParity[r][0]));
+		}
+		//cout << position << endl;
+		//error correction
+		if (position != 0)
+		{
+			cout << "[Hamming74Decoder]\tBit corruption detected at position = " << position << endl;
+			codedData[position - 1][0] = !(codedData[position - 1][0]);
+		}
+
+		//data bits extraction
+		vector<vector<bool>> decodedData(bits, vector<bool>(1));
+		vector<unsigned int> dataBitsPosition{ 2,4,5,6 };
+
+		for (size_t i = 0; i < bits; i++)
+			decodedData[i][0] = codedData[dataBitsPosition[i]][0];
+
+		return decodedData;
+	}
+	else
+	{
+		//parity check
+		vector<vector<bool>> H{ {1,0,1,0,1,0,1},
+								{0,1,1,0,0,1,1},
+								{0,0,0,1,1,1,1} };
+
+
+		vector<bool> tmp = codedData.back();
+		bool parityBit = tmp.back();
+		codedData.pop_back();
+
+		/*bool currentParityBit = 0;
+
+		for (size_t r = 0; r < codedData.size(); r++)
+			currentParityBit = currentParityBit ^ codedData[r][0];*/
+
+
+		vector<vector<bool>> decodedParity = matrixMultiplicationWithModulo(H, codedData);
+		unsigned int position = 0;
+
+		for (size_t r = 0; r < decodedParity.size(); r++)
+		{
+			position = position + (unsigned int)(pow(2, r) * (unsigned int)(decodedParity[r][0]));
+		}
+		//cout << position << endl;
+		//error correction
+		if (position != 0)
+		{
+			cout << "[Hamming74Decoder]\tBit corruption detected at position = " << position << endl;
+			codedData[position - 1][0] = !(codedData[position - 1][0]);
+
+			bool currentParityBit = 0;
+
+			for (size_t r = 0; r < codedData.size(); r++)
+				currentParityBit = currentParityBit ^ codedData[r][0];
+
+			if (currentParityBit != parityBit)
+			{
+				cout << "[Hamming74Decoder]\tDouble bit corruption detected! Retransmission needed. Function will return given coded data.\n";
+				codedData[position - 1][0] = !(codedData[position - 1][0]);
+				codedData.push_back(tmp);
+				return codedData;
+			}
+		}
+		//else if(position==0 && currentParityBit == parityBit
+
+		//data bits extraction
+		vector<vector<bool>> decodedData(bits, vector<bool>(1));
+		vector<unsigned int> dataBitsPosition{ 2,4,5,6 };
+
+		for (size_t i = 0; i < bits; i++)
+			decodedData[i][0] = codedData[dataBitsPosition[i]][0];
+
+		return decodedData;
+
+
+
+	}
+
 }
 
 int main()
@@ -90,10 +182,10 @@ int main()
 	/*bool a = 1;
 	bool b = 1;
 	cout << (bool)(a^b) << endl;*/
-    vector<char> charTab{ 'z' };
-    vector<bitset<bits>> bitsetArray = S2BS(charTab, false);
+	vector<char> charTab{ 'z' };
+	vector<bitset<bits>> bitsetArray = S2BS(charTab, false);
 	vector<vector<bool>> bitsetArrayRewrite(bits, vector<bool>(1));
-    
+
 	//Rewriting 2d bitsetArray to 1d bitsetArrayRewrite
 	for (size_t j = 0; j < bits; j++)
 	{
@@ -125,7 +217,7 @@ int main()
 	/*vector<vector<bool>> A{ {1,1,1,1},{1,0,1,1},{0,1,1,0} }, B{ {1},{0},{1},{1} };
 	vector<vector<bool>> result = matrixMultiplicationWithModulo(A, B);*/
 
-	vector<vector<bool>> HammingCode = Hamming74Coder(bitsetArrayRewrite);
+	vector<vector<bool>> HammingCode = Hamming74Coder(bitsetArrayRewrite, true);
 	for (size_t r = 0; r < HammingCode.size(); r++)
 	{
 		for (size_t c = 0; c < HammingCode[r].size(); c++)
@@ -133,7 +225,7 @@ int main()
 		cout << endl;
 	}
 	cout << endl;
-	vector<vector<bool>> corruptedHammingCode = bitNegator(HammingCode, 4);
+	vector<vector<bool>> corruptedHammingCode = bitNegator(HammingCode, 1);
 	for (size_t r = 0; r < corruptedHammingCode.size(); r++)
 	{
 		for (size_t c = 0; c < corruptedHammingCode[r].size(); c++)
@@ -141,7 +233,7 @@ int main()
 		cout << endl;
 	}
 	cout << endl;
-	vector<vector<bool>> decodedData = Hamming74Decoder(corruptedHammingCode);
+	vector<vector<bool>> decodedData = Hamming74Decoder(corruptedHammingCode,true);
 	for (size_t r = 0; r < decodedData.size(); r++)
 	{
 		for (size_t c = 0; c < decodedData[r].size(); c++)
@@ -155,6 +247,6 @@ int main()
 //X2. Wydzielic S2BS i dostoswac do projektu
 //x3. Zaimplementowac funkcje kodujaca kodem Hamming(7,4)
 //x4. Napisac funkcje wprowadzajaca bit bledu (negujaca wskazany nr bitu)
-//5. Napisac dekoder kodu Hamminga(7,4)
+//x5. Napisac dekoder kodu Hamminga(7,4)
 //6. Zmodyfikowac powyzej napisany koder i dekoder, by obslugiwal kod SECDED (z dodatkowym bitem parzystosci)
 //    - ten punkt realizowac rownolegle z powyzszymi - dodac przelaczniki
