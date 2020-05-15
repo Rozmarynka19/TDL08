@@ -39,18 +39,50 @@ vector<vector<bool>> Hamming74Coder(vector<vector<bool>> data)
 	return matrixMultiplicationWithModulo(G, data);
 }
 
-//position numbered from 0
-//allowed value of position = <0,6>
-vector<vector<bool>> bitNegator(vector<vector<bool>> data, unsigned int position)
+//position numbered from 1
+//allowed value of position = <1,7>
+vector<vector<bool>> bitNegator(vector<vector<bool>> codedData, unsigned int position)
 {
-	if (position > 6)
+	if (position > 7)
 	{
 		cout << "[bitNegator]\tPosition number out of range! Function will return unchanged vector.\n";
-		return data;
+		return codedData;
 	}
 
-	data[position][0] = !(data[position][0]);
-	return data;
+	codedData[position-1][0] = !(codedData[position-1][0]);
+	return codedData;
+}
+
+vector<vector<bool>> Hamming74Decoder(vector<vector<bool>> codedData)
+{
+	//parity check
+	vector<vector<bool>> H{ {1,0,1,0,1,0,1},
+							{0,1,1,0,0,1,1},
+							{0,0,0,1,1,1,1} };
+
+	vector<vector<bool>> decodedParity = matrixMultiplicationWithModulo(H, codedData);
+	unsigned int position = 0;
+
+	for (size_t r = 0; r < decodedParity.size(); r++)
+	{
+		position = position + (unsigned int)(pow(2, r) * (unsigned int)(decodedParity[r][0]));
+	}
+	cout << position << endl;
+	//error correction
+	if (position != 0)
+	{
+		cout << "[Hamming74Decoder]\tBit corruption detected at position = " << position << endl;
+		codedData[position-1][0] = !(codedData[position-1][0]);
+	}
+
+	//data bits extraction
+	vector<vector<bool>> decodedData(bits, vector<bool>(1));
+	vector<unsigned int> dataBitsPosition{ 2,4,5,6 };
+
+	for (size_t i = 0; i < bits; i++)
+		decodedData[i][0]=codedData[dataBitsPosition[i]][0];
+
+	return decodedData;
 }
 
 int main()
@@ -101,11 +133,19 @@ int main()
 		cout << endl;
 	}
 	cout << endl;
-	vector<vector<bool>> tmp = bitNegator(HammingCode, 4);
-	for (size_t r = 0; r < tmp.size(); r++)
+	vector<vector<bool>> corruptedHammingCode = bitNegator(HammingCode, 4);
+	for (size_t r = 0; r < corruptedHammingCode.size(); r++)
 	{
-		for (size_t c = 0; c < tmp[r].size(); c++)
-			cout << tmp[r][c] << " ";
+		for (size_t c = 0; c < corruptedHammingCode[r].size(); c++)
+			cout << corruptedHammingCode[r][c] << " ";
+		cout << endl;
+	}
+	cout << endl;
+	vector<vector<bool>> decodedData = Hamming74Decoder(corruptedHammingCode);
+	for (size_t r = 0; r < decodedData.size(); r++)
+	{
+		for (size_t c = 0; c < decodedData[r].size(); c++)
+			cout << decodedData[r][c] << " ";
 		cout << endl;
 	}
 }
@@ -114,7 +154,7 @@ int main()
 //x1. Napisac funkcje do wykonywania mnozenia macierzowego
 //X2. Wydzielic S2BS i dostoswac do projektu
 //x3. Zaimplementowac funkcje kodujaca kodem Hamming(7,4)
-//4. Napisac funkcje wprowadzajaca bit bledu (negujaca wskazany nr bitu)
+//x4. Napisac funkcje wprowadzajaca bit bledu (negujaca wskazany nr bitu)
 //5. Napisac dekoder kodu Hamminga(7,4)
 //6. Zmodyfikowac powyzej napisany koder i dekoder, by obslugiwal kod SECDED (z dodatkowym bitem parzystosci)
 //    - ten punkt realizowac rownolegle z powyzszymi - dodac przelaczniki
