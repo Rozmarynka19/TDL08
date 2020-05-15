@@ -148,6 +148,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="L08.cpp" />
+    <ClCompile Include="S2BS.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="S2BS.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

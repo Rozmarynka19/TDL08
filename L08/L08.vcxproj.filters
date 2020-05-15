@@ -18,5 +18,13 @@
     <ClCompile Include="L08.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="S2BS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="S2BS.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
