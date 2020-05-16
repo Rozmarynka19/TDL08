@@ -149,7 +149,7 @@ int main()
 			bitsetArrayRewrite[j][i] = bitsetArray[i][j];
 	}
 
-	vector<vector<bool>> HammingCode = Hamming74Coder(bitsetArrayRewrite, true);
+	vector<vector<bool>> HammingCode = Hamming74Coder(bitsetArrayRewrite, false);
 #ifdef verboseMode
 	cout << "After coding:\n";
 	for (size_t r = 0; r < HammingCode.size(); r++)
@@ -159,7 +159,7 @@ int main()
 		cout << endl;
 	}
 #endif // verboseMode
-	vector<vector<bool>> corruptedHammingCode = bitNegator(HammingCode, 4);
+	vector<vector<bool>> corruptedHammingCode = bitNegator(HammingCode, 2);
 #ifdef verboseMode
 	cout << "After negation:\n";
 	for (size_t r = 0; r < corruptedHammingCode.size(); r++)
@@ -169,7 +169,7 @@ int main()
 		cout << endl;
 	}
 #endif // verboseMode	
-	vector<vector<bool>> decodedData = Hamming74Decoder(corruptedHammingCode, true);
+	vector<vector<bool>> decodedData = Hamming74Decoder(corruptedHammingCode, false);
 #ifdef verboseMode
 	cout << "After decoding:\n";
 	for (size_t r = 0; r < decodedData.size(); r++)
@@ -180,3 +180,64 @@ int main()
 	}
 #endif // verboseMode
 }
+
+/*
+============== Hamming(7,4) ==============
+Dane do zakodowania:
+1
+0
+1
+0
+--------------------------
+Po zakodowaniu kodem Hamminga(7,4):
+1
+0
+1
+1
+0
+1
+0
+--------------------------
+Po negacji 2. bitu:
+1
+1
+1
+1
+0
+1
+0
+--------------------------
+Po zdekodowaniu:
+1
+0
+1
+0
+============== SECDED ==============
+Dane do zakodowania:
+1
+0
+1
+0
+--------------------------
+Po zakodowaniu kodem z wariantem SECDED:
+1
+0
+1
+1
+0
+1
+0
+0
+--------------------------
+Po negacji 2. i 4. bitu:
+1
+1
+1
+0
+0
+1
+0
+0
+--------------------------
+Odkodowanie informacji jest niemo¿liwe, poniewa¿ zosta³y uszkodzone 2 bity - potrzebna retransmisja.
+*/
